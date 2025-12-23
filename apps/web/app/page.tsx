@@ -14,7 +14,14 @@ export default function Home() {
             hit the beats, build your combo, and defeat your rival!
           </p>
 
-          <div className="flex gap-4 justify-center pt-8">
+          <div className="flex flex-wrap gap-4 justify-center pt-8">
+            <Link
+              href="/practice"
+              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-semibold text-lg transition-colors shadow-lg"
+            >
+              🎵 Practice Mode
+            </Link>
+
             <Link
               href="/game/test"
               className="px-8 py-4 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold text-lg transition-colors"
@@ -28,13 +35,6 @@ export default function Home() {
             >
               Play Online
             </Link>
-
-            <a
-              href="#how-to-play"
-              className="px-8 py-4 bg-gray-800 hover:bg-gray-700 rounded-lg font-semibold text-lg transition-colors"
-            >
-              How to Play
-            </a>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-16">
