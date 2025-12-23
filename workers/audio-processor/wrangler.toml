@@ -1,0 +1,11 @@
+name = "rhythm-battle-audio-processor"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[vars]
+ENVIRONMENT = "development"
+
+# R2 Storage pour le cache audio (à créer plus tard)
+# [[r2_buckets]]
+# binding = "AUDIO_CACHE"
+# bucket_name = "rhythm-battle-audio-cache"
