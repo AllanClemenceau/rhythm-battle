@@ -16,10 +16,17 @@ export default function Home() {
 
           <div className="flex gap-4 justify-center pt-8">
             <Link
-              href="/lobby"
+              href="/game/test"
               className="px-8 py-4 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold text-lg transition-colors"
             >
-              Play Now
+              Test Gameplay
+            </Link>
+
+            <Link
+              href="/lobby"
+              className="px-8 py-4 bg-blue-600 hover:bg-blue-700 rounded-lg font-semibold text-lg transition-colors"
+            >
+              Play Online
             </Link>
 
             <a
