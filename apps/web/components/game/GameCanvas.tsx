@@ -1,6 +1,7 @@
 'use client';
 
 import { useGameLoop } from '@/hooks/useGameLoop';
+import { useGameAudio } from '@/hooks/useGameAudio';
 import { useGameStore } from '@/stores/gameStore';
 import { useInputHandler } from '@/hooks/useInputHandler';
 import NoteTrack from './NoteTrack';
@@ -15,6 +16,7 @@ export default function GameCanvas() {
   const { lastHitResult } = useInputHandler();
 
   useGameLoop(); // Active la boucle de jeu
+  useGameAudio(); // Active la lecture audio synchronisée
 
   if (!beatmap) {
     return (

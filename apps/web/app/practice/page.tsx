@@ -11,12 +11,13 @@ import type { AudioAnalysis } from '@/lib/audio/analyzer';
 
 export default function PracticePage() {
   const router = useRouter();
-  const { setBeatmap, startGame, resetGame, status } = useGameStore();
+  const { setBeatmap, setAudioBuffer, startGame, resetGame, status } = useGameStore();
   const [analysis, setAnalysis] = useState<AudioAnalysis | null>(null);
   const [isReady, setIsReady] = useState(false);
 
-  const handleBeatmapGenerated = (beatmap: Beatmap, audioAnalysis: AudioAnalysis) => {
+  const handleBeatmapGenerated = (beatmap: Beatmap, audioAnalysis: AudioAnalysis, audioBuffer: AudioBuffer) => {
     setBeatmap(beatmap);
+    setAudioBuffer(audioBuffer);
     setAnalysis(audioAnalysis);
     setIsReady(true);
   };

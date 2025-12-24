@@ -3,6 +3,10 @@ import type { GameState, Beatmap, HitResult, Note, PlayerState } from '@project/
 import { GAME } from '@project/shared/constants';
 
 interface GameStore extends GameState {
+  // Audio
+  audioBuffer: AudioBuffer | null;
+  setAudioBuffer: (audioBuffer: AudioBuffer | null) => void;
+
   // Actions
   setBeatmap: (beatmap: Beatmap) => void;
   startGame: () => void;
@@ -30,8 +34,11 @@ export const useGameStore = create<GameStore>((set, get) => ({
   players: [createInitialPlayer('player-1')],
   beatmap: null,
   currentTime: 0,
+  audioBuffer: null,
 
   // Actions
+  setAudioBuffer: (audioBuffer) => set({ audioBuffer }),
+
   setBeatmap: (beatmap) => set({ beatmap, status: 'waiting' }),
 
   startGame: () => set({
@@ -98,5 +105,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
     currentTime: 0,
     players: [createInitialPlayer('player-1')],
     beatmap: null,
+    audioBuffer: null,
   }),
 }));

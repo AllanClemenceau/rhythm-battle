@@ -8,7 +8,7 @@ import type { Beatmap } from '@project/shared/types';
 import type { AudioAnalysis } from '@/lib/audio/analyzer';
 
 interface AudioFileLoaderProps {
-  onBeatmapGenerated: (beatmap: Beatmap, analysis: AudioAnalysis) => void;
+  onBeatmapGenerated: (beatmap: Beatmap, analysis: AudioAnalysis, audioBuffer: AudioBuffer) => void;
 }
 
 export default function AudioFileLoader({ onBeatmapGenerated }: AudioFileLoaderProps) {
@@ -51,7 +51,7 @@ export default function AudioFileLoader({ onBeatmapGenerated }: AudioFileLoaderP
           setProgress(`Done! Found ${beatmap.notes.length} notes at ${Math.round(analysis.bpm)} BPM`);
           setIsAnalyzing(false);
 
-          onBeatmapGenerated(beatmap, analysis);
+          onBeatmapGenerated(beatmap, analysis, audioData.audioBuffer);
         } catch (error) {
           console.error('Analysis error:', error);
           setProgress('Failed to analyze audio');
