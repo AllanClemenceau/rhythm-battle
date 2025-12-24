@@ -16,6 +16,7 @@ export default function PracticePage() {
   const [isReady, setIsReady] = useState(false);
 
   const handleBeatmapGenerated = (beatmap: Beatmap, audioAnalysis: AudioAnalysis, audioBuffer: AudioBuffer) => {
+    console.log('✅ Beatmap generated:', { beatmap, audioBuffer, audioAnalysis });
     setBeatmap(beatmap);
     setAudioBuffer(audioBuffer);
     setAnalysis(audioAnalysis);
@@ -125,14 +126,19 @@ export default function PracticePage() {
 
         {isReady && (
           <div className="bg-green-900/20 border border-green-700/50 rounded-lg p-6 text-center animate-fade-in">
-            <p className="text-green-400 font-semibold mb-4">
+            <p className="text-green-400 font-semibold mb-2">
               ✓ Beatmap generated successfully!
             </p>
+            {analysis && (
+              <p className="text-sm text-gray-400 mb-4">
+                {analysis.beats.length} beats detected • {Math.round(analysis.bpm)} BPM • Audio loaded 🎵
+              </p>
+            )}
             <button
               onClick={handleStart}
               className="px-8 py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold text-xl rounded-lg transition-colors"
             >
-              Start Playing
+              Start Playing (with Music!)
             </button>
           </div>
         )}

@@ -11,25 +11,31 @@ export function useGameAudio() {
   const { audioBuffer, beatmap, status } = useGameStore();
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const startTimeRef = useRef<number>(0);
+  const isPlayingRef = useRef<boolean>(false);
+  const beatmapIdRef = useRef<string | null>(null);
 
   useEffect(() => {
-    // Initialiser l'AudioContext
-    if (!audioContextRef.current) {
+    // Initialiser l'AudioContext ou le recréer s'il est fermé
+    if (!audioContextRef.current || audioContextRef.current.state === 'closed') {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      console.log('🎵 Audio context created/recreated');
     }
 
     const audioContext = audioContextRef.current;
 
-    // Démarrer la lecture quand le jeu commence
-    if (status === 'playing' && audioBuffer && beatmap) {
-      // Arrêter toute lecture précédente
-      if (sourceRef.current) {
-        try {
-          sourceRef.current.stop();
-        } catch (e) {
-          // Ignore si déjà arrêté
-        }
+    // Démarrer la lecture quand le jeu commence (seulement si pas déjà en cours)
+    if (status === 'playing' && audioBuffer && beatmap && !isPlayingRef.current) {
+      console.log('🎵 Starting audio playback...', {
+        audioBuffer,
+        beatmapId: beatmap.id,
+        audioContextState: audioContext.state
+      });
+
+      // Réactiver le contexte audio si suspendu (navigateurs modernes)
+      if (audioContext.state === 'suspended') {
+        audioContext.resume().then(() => {
+          console.log('🎵 Audio context resumed');
+        });
       }
 
       // Créer une nouvelle source
@@ -40,11 +46,14 @@ export function useGameAudio() {
       // Calculer l'offset de départ (startTime de la beatmap en secondes)
       const startOffset = beatmap.startTime / 1000;
 
+      console.log('🎵 Playing from', startOffset, 'seconds');
+
       // Démarrer la lecture
       source.start(0, startOffset);
-      startTimeRef.current = audioContext.currentTime;
 
       sourceRef.current = source;
+      isPlayingRef.current = true;
+      beatmapIdRef.current = beatmap.id;
 
       // Arrêter automatiquement après 60 secondes
       setTimeout(() => {
@@ -54,12 +63,14 @@ export function useGameAudio() {
           } catch (e) {
             // Ignore
           }
+          isPlayingRef.current = false;
+          console.log('🎵 Audio stopped after 60s');
         }
       }, beatmap.duration);
     }
 
     // Arrêter la lecture si le jeu s'arrête
-    if (status === 'waiting' || status === 'finished') {
+    if ((status === 'waiting' || status === 'finished') && isPlayingRef.current) {
       if (sourceRef.current) {
         try {
           sourceRef.current.stop();
@@ -67,27 +78,19 @@ export function useGameAudio() {
           // Ignore
         }
         sourceRef.current = null;
+        isPlayingRef.current = false;
+        beatmapIdRef.current = null;
+        console.log('🎵 Audio stopped (game ended)');
       }
     }
 
-    // Cleanup
+    // Cleanup - arrêter l'audio si le composant se démonte pendant la lecture
     return () => {
-      if (sourceRef.current) {
-        try {
-          sourceRef.current.stop();
-        } catch (e) {
-          // Ignore
-        }
-      }
+      // On ne fait rien ici pour éviter de stopper l'audio sur les re-renders
     };
   }, [status, audioBuffer, beatmap]);
 
-  // Cleanup au démontage
-  useEffect(() => {
-    return () => {
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
-    };
-  }, []);
+  // Note: On ne ferme PAS le contexte audio au démontage
+  // car ça cause des problèmes avec React Strict Mode
+  // et l'audio doit être disponible pendant toute la session
 }
