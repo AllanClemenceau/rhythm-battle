@@ -2,10 +2,24 @@ import { create } from 'zustand';
 import type { GameState, Beatmap, HitResult, Note, PlayerState } from '@project/shared/types';
 import { GAME } from '@project/shared/constants';
 
+type SendInputFn = (noteId: string, result: HitResult, timestamp: number) => void;
+type SendMissFn = (direction: string, timestamp: number) => void;
+
 interface GameStore extends GameState {
   // Audio
   audioBuffer: AudioBuffer | null;
   setAudioBuffer: (audioBuffer: AudioBuffer | null) => void;
+
+  // Multiplayer
+  isMultiplayer: boolean;
+  currentPlayerId: string | null;
+  hitNoteIds: Set<string>; // Track which notes this player has hit (for multiplayer)
+  setMultiplayer: (isMultiplayer: boolean) => void;
+  setCurrentPlayerId: (playerId: string | null) => void;
+  updateGameState: (state: Partial<GameState>) => void;
+  setSendFunctions: (sendInput: SendInputFn | null, sendMiss: SendMissFn | null) => void;
+  sendInputFn: SendInputFn | null;
+  sendMissFn: SendMissFn | null;
 
   // Actions
   setBeatmap: (beatmap: Beatmap) => void;
@@ -35,17 +49,45 @@ export const useGameStore = create<GameStore>((set, get) => ({
   beatmap: null,
   currentTime: 0,
   audioBuffer: null,
+  isMultiplayer: false,
+  currentPlayerId: null,
+  hitNoteIds: new Set(),
+  sendInputFn: null,
+  sendMissFn: null,
 
   // Actions
   setAudioBuffer: (audioBuffer) => set({ audioBuffer }),
 
+  setMultiplayer: (isMultiplayer) => set({ isMultiplayer }),
+
+  setCurrentPlayerId: (playerId) => set({ currentPlayerId: playerId }),
+
+  updateGameState: (state) => set((current) => {
+    // Ensure we create new references for nested objects to trigger re-renders
+    if (state.players) {
+      return {
+        ...current,
+        ...state,
+        players: state.players.map(p => ({ ...p })),
+      };
+    }
+    return { ...current, ...state };
+  }),
+
+  setSendFunctions: (sendInputFn, sendMissFn) => set({ sendInputFn, sendMissFn }),
+
   setBeatmap: (beatmap) => set({ beatmap, status: 'waiting' }),
 
-  startGame: () => set({
-    status: 'playing',
-    currentTime: 0,
-    players: [createInitialPlayer('player-1')],
-  }),
+  startGame: () => {
+    const state = get();
+    set({
+      status: 'playing',
+      currentTime: 0,
+      hitNoteIds: new Set(), // Reset hit notes when starting game
+      // In multiplayer, keep existing players; in solo, reset to single player
+      players: state.isMultiplayer ? state.players : [createInitialPlayer('player-1')],
+    });
+  },
 
   updateTime: (time) => set({ currentTime: time }),
 
@@ -53,6 +95,20 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = get();
     if (!state.beatmap || state.status !== 'playing') return;
 
+    // In multiplayer mode, send input to server
+    if (state.isMultiplayer && state.sendInputFn) {
+      state.sendInputFn(noteId, result, Date.now());
+
+      // Only track that this note has been hit locally (to prevent double-hitting)
+      // DON'T update stats - let the server be the source of truth
+      const newHitNoteIds = new Set(state.hitNoteIds);
+      newHitNoteIds.add(noteId);
+
+      set({ hitNoteIds: newHitNoteIds });
+      return;
+    }
+
+    // Solo mode - update locally
     const player = state.players[0];
     const beatmap = state.beatmap;
 
@@ -90,6 +146,14 @@ export const useGameStore = create<GameStore>((set, get) => ({
     const state = get();
     if (state.status !== 'playing') return;
 
+    // In multiplayer mode, send miss to server
+    if (state.isMultiplayer && state.sendMissFn) {
+      state.sendMissFn('left', Date.now()); // Direction doesn't matter for empty miss
+      // DON'T update stats - let the server be the source of truth
+      return;
+    }
+
+    // Solo mode - update locally
     const player = state.players[0];
     set({
       players: [{
@@ -106,5 +170,6 @@ export const useGameStore = create<GameStore>((set, get) => ({
     players: [createInitialPlayer('player-1')],
     beatmap: null,
     audioBuffer: null,
+    hitNoteIds: new Set(),
   }),
 }));

@@ -11,9 +11,11 @@ export type ClientMessage =
 // Server -> Client
 export type ServerMessage =
   | { type: 'room_state'; payload: RoomState }
+  | { type: 'joined'; payload: { playerId: string } }
   | { type: 'player_joined'; payload: { player: PlayerState } }
   | { type: 'player_left'; payload: { playerId: string } }
   | { type: 'player_ready'; payload: { playerId: string; ready: boolean } }
+  | { type: 'beatmap_received'; payload: { beatmap: Beatmap } }
   | { type: 'countdown_start'; payload: { startAt: number } }
   | { type: 'game_start'; payload: { beatmap: Beatmap; audioUrl: string } }
   | { type: 'game_update'; payload: GameState }

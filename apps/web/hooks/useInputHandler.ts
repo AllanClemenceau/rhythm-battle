@@ -11,6 +11,8 @@ export function useInputHandler() {
     beatmap,
     currentTime,
     status,
+    isMultiplayer,
+    hitNoteIds,
     registerHit,
     registerMiss,
   } = useGameStore();
@@ -28,9 +30,18 @@ export function useInputHandler() {
   const findClosestNote = useCallback((direction: Direction) => {
     if (!beatmap) return null;
 
-    const availableNotes = beatmap.notes.filter(
-      note => note.direction === direction && !note.isHit
-    );
+    // In multiplayer, ALL notes are available (server tracks hits); in solo, check note.isHit
+    const availableNotes = beatmap.notes.filter(note => {
+      if (note.direction !== direction) return false;
+
+      if (isMultiplayer) {
+        // In multiplayer, check if THIS player has hit this note locally
+        return !hitNoteIds.has(note.id);
+      } else {
+        // In solo, check the note's isHit flag
+        return !note.isHit;
+      }
+    });
 
     let closestNote = null;
     let closestDelta = Infinity;
@@ -46,7 +57,7 @@ export function useInputHandler() {
     }
 
     return closestNote ? { note: closestNote, delta: closestDelta } : null;
-  }, [beatmap, currentTime]);
+  }, [beatmap, currentTime, isMultiplayer, hitNoteIds]);
 
   // Handler pour une direction
   const handleInput = useCallback((direction: Direction) => {
@@ -72,7 +83,7 @@ export function useInputHandler() {
       setLastHitResult('miss');
       setTimeout(() => setLastHitResult(null), 500);
     }
-  }, [status, findClosestNote, registerHit, registerMiss]);
+  }, [status, findClosestNote, registerHit, registerMiss, currentTime, beatmap, hitNoteIds]);
 
   // Keyboard listeners
   useEffect(() => {

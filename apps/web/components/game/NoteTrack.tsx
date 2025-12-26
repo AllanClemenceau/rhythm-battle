@@ -12,7 +12,7 @@ interface NoteTrackProps {
 }
 
 const TRACK_HEIGHT = 600; // px
-const HIT_ZONE_Y = TRACK_HEIGHT - 80; // Position de la zone de hit
+const HIT_ZONE_Y = TRACK_HEIGHT - 64; // Position de la zone de hit (64 = h-16 en pixels)
 
 const DIRECTION_COLORS: Record<Direction, string> = {
   left: 'bg-pink-500',
@@ -61,14 +61,15 @@ export default function NoteTrack({ direction, notes, currentTime }: NoteTrackPr
           note={note}
           yPosition={getYPosition(note)}
           color={DIRECTION_COLORS[direction]}
+          direction={direction}
         />
       ))}
 
-      {/* Zone de hit (en bas) */}
-      <div
-        className={`absolute bottom-0 left-0 right-0 h-20 flex items-center justify-center border-4 ${DIRECTION_COLORS[direction]} border-opacity-50 bg-gray-900/80 rounded-b-lg`}
-      >
-        <span className="text-4xl font-bold text-white/40">
+      {/* Zone de hit (en bas) - Flèche fixe sans fond opaque */}
+      <div className="absolute bottom-0 left-0 right-0 h-16 flex items-center justify-center">
+        {/* Flèche de target avec un léger glow */}
+        <div className={`absolute inset-0 ${DIRECTION_COLORS[direction]} blur-sm opacity-20`} />
+        <span className="relative text-5xl font-bold text-white/30 z-10">
           {DIRECTION_ARROWS[direction]}
         </span>
       </div>

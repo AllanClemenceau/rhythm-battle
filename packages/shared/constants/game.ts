@@ -17,13 +17,13 @@ export const SCORE = {
 // Gameplay
 export const GAME = {
   DURATION: 60000,           // 60 secondes
-  INITIAL_HP: 100,
+  INITIAL_HP: 200,           // Increased temporarily to prevent early game over
   BASE_DAMAGE: 5,            // Dégâts de base sur miss
   COMBO_DAMAGE_MULTIPLIER: 0.5, // +0.5 dégâts par combo adverse
   COMEBACK_HP_THRESHOLD: 30, // En dessous, comeback mechanic actif
   COMEBACK_TIMING_BONUS: 20, // +20ms de fenêtre timing
   NOTE_TRAVEL_TIME: 2000,    // Temps pour qu'une note descende
-  COUNTDOWN_DURATION: 3000,  // 3 secondes de countdown
+  COUNTDOWN_DURATION: 4000,  // 4 secondes de countdown (3,2,1,GO!)
 } as const;
 
 // Combo thresholds pour densité
